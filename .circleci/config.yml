@@ -57,7 +57,7 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl --insecure https://kvdb.io/Punbcdp1sT3t2HVN6rLWCW/migration_<< parameters.Workflow_Id >>)
+            SUCCESS=$(curl --insecure https://kvdb.io/${KVDB_BUCKET}/migration_<< parameters.Workflow_Id >>)
             if(( $SUCCESS==1 ))
             then
               cd ~/project/backend
@@ -210,7 +210,9 @@ jobs:
       - install_ansible
       - install_aws_cli
       - add_ssh_keys:
-          fingerprints: ["36:82:c6:6c:a2:c9:0b:b6:5f:68:c6:7e:d0:4f:41:09"]
+          fingerprints: ["75:7d:8c:65:71:bd:4b:a7:f5:24:bc:bc:7e:ed:c1:ce"]
+
+
       - attach_workspace:
           at: ~/
       - run:
@@ -255,7 +257,7 @@ jobs:
           command: |
            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
            then
-               curl https://kvdb.io/Punbcdp1sT3t2HVN6rLWCW/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+               curl https://kvdb.io/${KVDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
            fi
       - destroy-environment
       - revert-migrations
@@ -302,7 +304,9 @@ jobs:
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
-          keys: ["36:82:c6:6c:a2:c9:0b:b6:5f:68:c6:7e:d0:4f:41:09"]
+          keys: ["75:7d:8c:65:71:bd:4b:a7:f5:24:bc:bc:7e:ed:c1:ce"]
+
+
       - attach_workspace:
           at: ~/
       - restore_cache:
@@ -403,7 +407,7 @@ jobs:
           command: |
             export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
             echo "old flow id $OLD_WORKFLOW_ID"
-            curl https://kvdb.io/Punbcdp1sT3t2HVN6rLWCW/old_workflow_id -d "${OLD_WORKFLOW_ID}"
+            curl https://kvdb.io/${KVDB_BUCKET}/old_workflow_id -d "${OLD_WORKFLOW_ID}"
       - run:
           name: Update cloudfront distribution
           command: |
@@ -437,7 +441,7 @@ jobs:
               export STACKS=($(aws cloudformation list-stacks \
                 --query "StackSummaries[*].StackName" \
                 --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-              export OldWorkflowID=$(curl --insecure https://kvdb.io/Punbcdp1sT3t2HVN6rLWCW/old_workflow_id)
+              export OldWorkflowID=$(curl --insecure https://kvdb.io/${KVDB_BUCKET}/old_workflow_id)
               
               echo $STACKS
               echo $OldWorkflowID
@@ -448,7 +452,7 @@ jobs:
               export STACKS=($(aws cloudformation list-stacks \
                 --query "StackSummaries[*].StackName" \
                 --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-              export OldWorkflowID=$(curl --insecure https://kvdb.io/Punbcdp1sT3t2HVN6rLWCW/old_workflow_id)
+              export OldWorkflowID=$(curl --insecure https://kvdb.io/${KVDB_BUCKET}/old_workflow_id)
               
               echo $STACKS
               echo $OldWorkflowID
